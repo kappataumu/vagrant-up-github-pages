@@ -3,7 +3,7 @@
 # article which can be found on XXX link
 
 CLONEREPO='https://github.com/kappataumu/kappataumu.github.com.git'
-CLONEDIR="$(basename $CLONEREPO)"
+CLONEDIR="/srv/www/$(basename $CLONEREPO)"
 
 start_seconds="$(date +%s)"
 echo "Welcome to the initialization script."
@@ -94,8 +94,7 @@ if [[ ! -d "$CLONEDIR" ]]; then
 fi
 
 # Now, for the Jekyll part
-cd "$CLONEDIR"
-jekyll serve --detach
+jekyll serve --source "$CLONEDIR" --detach
 
 end_seconds="$(date +%s)"
 echo "-----------------------------"
