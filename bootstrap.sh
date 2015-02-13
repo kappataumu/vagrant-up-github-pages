@@ -1,6 +1,10 @@
 #!/bin/bash
-# This provisioning script has been derived from VVV. It accompanies the
-# article which can be found on XXX link
+#
+# This provisioning script has been derived from Varying Vagrant Vagrants:
+# https://github.com/Varying-Vagrant-Vagrants/VVV
+#
+# It accompanies the article which can be found here:
+# http://kappataumu.com/articles/vagrant-jekyll-github-pages-streamlined-content-creation.html
 
 CLONEREPO='https://github.com/kappataumu/kappataumu.github.com.git'
 CLONEDIR="/srv/www/$(basename $CLONEREPO)"
