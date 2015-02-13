@@ -5,8 +5,11 @@ Getting started is straightforward:
 ```
 $ git clone https://github.com/kappataumu/vagrant-up-github-pages.git
 $ cd vagrant-up-github-pages
+$ sed -i 's#XXX#https://github.com/kappataumu/kappataumu.github.com.git#' bootstrap.sh
 $ vagrant up
 $ curl http://localhost:4000
 ```
 
-Replace `CLONEREPO` in `bootstrap.sh` with the GitHub pages repository you want Jekyll to serve.
+That's all there is to it.
+
+If you don't have `sed` laying around, you can simply tweak `CLONEREPO` right at the top of `bootstrap.sh`, replacing `XXX` with the URL for the GitHub pages repository that we'll instruct Jekyll to serve locally.

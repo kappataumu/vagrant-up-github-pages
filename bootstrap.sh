@@ -6,7 +6,7 @@
 # It accompanies the article which can be found here:
 # http://kappataumu.com/articles/vagrant-jekyll-github-pages-streamlined-content-creation.html
 
-CLONEREPO='https://github.com/kappataumu/kappataumu.github.com.git'
+CLONEREPO='XXX'
 CLONEDIR="/srv/www/$(basename $CLONEREPO)"
 
 start_seconds="$(date +%s)"
