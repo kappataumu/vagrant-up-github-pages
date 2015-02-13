@@ -55,8 +55,8 @@ else
 
     sudo add-apt-repository -y ppa:git-core/ppa
 
-    # Needed for nodejs
-    curl -sL https://deb.nodesource.com/setup | sudo bash -
+    # Needed for nodejs.
+    wget -q -O - https://deb.nodesource.com/setup | sudo bash -
 
     sudo apt-get update --assume-yes > /dev/null
 
