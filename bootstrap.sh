@@ -1,74 +1,41 @@
-#!/bin/bash
-#
-# This provisioning script has been derived from Varying Vagrant Vagrants:
-# https://github.com/Varying-Vagrant-Vagrants/VVV
-#
-# It accompanies the article which can be found here:
-# http://kappataumu.com/articles/vagrant-jekyll-github-pages-streamlined-content-creation.html
+#!/usr/bin/env bash
 
-CLONEREPO='XXX'
-CLONEDIR="/srv/www/$(basename $CLONEREPO)"
+: ${1?"No repo. Set the REPO environment variable and try again!"}
+clonerepo=${1}
+clonedir="/srv/www/$(basename $clonerepo)"
 
 start_seconds="$(date +%s)"
 echo "Welcome to the initialization script."
+echo "Github Pages repository to serve: $clonerepo"
 
-ping_result="$(ping -c 2 8.8.4.4 2>&1)"
-if [[ $ping_result != *bytes?from* ]]; then
-	echo "Network connection unavailable. Try again later."
-    exit 1
-fi
-
-apt_package_check_list=(
+apt_packages=(
     vim
     curl
     git-core
     nodejs
 )
 
-# Loop through each of our packages that should be installed on the system. If
-# not yet installed, it should be added to the array of packages to install.
-apt_package_install_list=()
-for pkg in "${apt_package_check_list[@]}"; do
-	package_version="$(dpkg -s $pkg 2>&1 | grep 'Version:' | cut -d " " -f 2)"
-	if [[ -n "${package_version}" ]]; then
-		space_count="$(expr 20 - "${#pkg}")" #11
-		pack_space_count="$(expr 30 - "${#package_version}")"
-		real_space="$(expr ${space_count} + ${pack_space_count} + ${#package_version})"
-		printf " * $pkg %${real_space}.${#package_version}s ${package_version}\n"
-	else
-		echo " *" $pkg [not installed]
-		apt_package_install_list+=($pkg)
-	fi
-done
-
-
-# If there are any packages to be installed in the apt_package_list array,
-# then we'll run `apt-get update` and then `apt-get install` to proceed.
-if [[ ${#apt_package_install_list[@]} = 0 ]]; then
-    echo -e "No apt packages to install.\n"
-else
-
-    # Provides add-apt-repository (including for Ubuntu 12.10)
-    sudo apt-get update --assume-yes > /dev/null
-    sudo apt-get install --assume-yes python-software-properties
-    sudo apt-get install --assume-yes software-properties-common
-
-    sudo add-apt-repository -y ppa:git-core/ppa
-
-    # Needed for nodejs.
-    wget -q -O - https://deb.nodesource.com/setup | sudo bash -
-
-    sudo apt-get update --assume-yes > /dev/null
-
-    # install required packages
-    echo "Installing apt-get packages..."
-    sudo apt-get install --assume-yes ${apt_package_install_list[@]}
-    sudo apt-get clean
+ping_result="$(ping -c 2 8.8.4.4 2>&1)"
+if [[ $ping_result != *bytes?from* ]]; then
+    echo "Network connection unavailable. Try again later."
+    exit 1
 fi
+
+# Needed for nodejs.
+# https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions
+curl -sSL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+sudo add-apt-repository -y ppa:git-core/ppa
+
+sudo apt-get update
+sudo apt-get upgrade
+
+echo "Installing apt-get packages..."
+sudo apt-get install -y ${apt_packages[@]}
+sudo apt-get clean
 
 # http://rvm.io/rvm/install
 gpg --keyserver hkp://keys.gnupg.net --recv-keys D39DC0E3
-\curl -sSL https://get.rvm.io | bash -s stable --ruby
+curl -sSL https://get.rvm.io | bash -s stable --ruby --quiet-curl
 source ~/.rvm/scripts/rvm
 
 # https://github.com/github/pages-gem
@@ -85,21 +52,35 @@ fi
 # but let's make sure it exists even if run directly.
 if [[ ! -d '/srv/www' ]]; then
     sudo mkdir '/srv/www'
+    sudo chown vagrant:vagrant '/srv/www'
 fi
-
-# Our favorite user group for web stuff. These commands are idempotent.
-#sudo chgrp www-data /srv/www
-#sudo chmod g+rws /srv/www
 
 # Time to pull the repo. If the directory is there, we do nothing,
 # since git should be used to push/pull commits instead.
-if [[ ! -d "$CLONEDIR" ]]; then
-    git clone "$CLONEREPO" "$CLONEDIR"
+if [[ ! -d "$clonedir" ]]; then
+    git clone "$clonerepo" "$clonedir"
 fi
 
-# Now, for the Jekyll part
-jekyll serve --source "$CLONEDIR" --detach
+# Now, for the Jekyll part. Due to jekyll/jekyll#3030 we need to  
+# detach Jekyll from the shell manually, if we want --watch to work.
+jekyll=$(which jekyll)
+wrapper="${jekyll/bin/wrappers}"
+log="/home/vagrant/jekyll.log"
+run="nohup $wrapper serve --source $clonedir --watch --force_polling >> $log 2>&1 &"
+eval $run
+
+cat << UPSTART | sudo tee /etc/init/jekyll.conf > /dev/null
+description "Jekyll"
+author "kappataumu <hello@kappataumu.com>"
+
+# You need Vagrant >= 1.8 to fix a regression that botched emission of this 
+# upstart event, see mitchellh/vagrant#6074 for details.
+start on vagrant-mounted MOUNTPOINT=/srv/www
+
+exec $run
+UPSTART
 
 end_seconds="$(date +%s)"
 echo "-----------------------------"
 echo "Provisioning complete in "$(expr $end_seconds - $start_seconds)" seconds"
+echo "You can now use 'less -S +F $log' to monitor Jekyll."
