@@ -83,8 +83,6 @@ cat << UPSTART | sudo tee /etc/init/jekyll.conf > /dev/null
 description "Jekyll"
 author "kappataumu <hello@kappataumu.com>"
 
-# You need Vagrant >= 1.8 to fix a regression that botched emission of this
-# upstart event, see mitchellh/vagrant#6074 for details.
 start on vagrant-mounted MOUNTPOINT=/srv/www
 
 exec $run
