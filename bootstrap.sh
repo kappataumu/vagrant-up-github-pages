@@ -13,6 +13,7 @@ apt_packages=(
     curl
     git-core
     nodejs
+    libgmp3-dev
 )
 
 ping_result="$(ping -c 2 8.8.4.4 2>&1)"
@@ -35,8 +36,11 @@ sudo apt-get clean
 
 # http://rvm.io/rvm/install
 gpg --keyserver hkp://keys.gnupg.net --recv-keys D39DC0E3
-curl -sSL https://get.rvm.io | bash -s stable --ruby --quiet-curl
+curl -sSL https://get.rvm.io | bash -s stable --quiet-curl
 source ~/.rvm/scripts/rvm
+rvm install 2.1.7 --quiet-curl
+rvm use 2.1.7 --default
+ruby --version
 
 # https://github.com/github/pages-gem
 gem install github-pages
