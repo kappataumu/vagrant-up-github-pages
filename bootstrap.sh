@@ -80,7 +80,7 @@ fi
 jekyll=$(which jekyll)
 wrapper="${jekyll/bin/wrappers}"
 log="/home/vagrant/jekyll.log"
-run="nohup $wrapper serve --source $clonedir --destination $clonedir --watch --force_polling >> $log 2>&1 &"
+run="start-stop-daemon --start --chuid vagrant:vagrant --exec $wrapper -- serve --source $clonedir --destination /home/vagrant/_site --watch --force_polling >> $log 2>&1 &"
 eval $run
 
 cat << UPSTART | sudo tee /etc/init/jekyll.conf > /dev/null
