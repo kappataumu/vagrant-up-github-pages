@@ -12,12 +12,11 @@ $ vagrant up
 That's all there is to it. Now you can:
 
 1. Access your website by browsing to `http://localhost:4000`.
-2. Edit files locally, inside the `www` subfolder.
+2. Edit your website locally, from within the `www` subfolder.
 3. Simply `vagrant up` directly in the future to start the guest (no bootstraping needed).
 
-Jekyll will: 
+Jekyll will:
 
 1. Recompile everything when changes are detected.
 2. Log all activity in `/home/vagrant/jekyll.log`.
 3. Automatically start serving your repo on every `vagrant up`.
-
